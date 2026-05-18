@@ -5,13 +5,17 @@ import { fmtUSD, fmtPct } from './pricing'
 export function exportPdf(rows, params) {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
-  const blue = [15, 40, 80]
-  const orange = [255, 140, 0]
-  const lightBlue = [235, 240, 250]
+  const dark = [28, 28, 28]
+  const red = [255, 27, 55]
+  const lightGray = [245, 243, 240]
 
   // Header bar
-  doc.setFillColor(...blue)
+  doc.setFillColor(...dark)
   doc.rect(0, 0, 297, 22, 'F')
+
+  // Red accent strip
+  doc.setFillColor(...red)
+  doc.rect(0, 22, 297, 2, 'F')
 
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(16)
@@ -20,13 +24,14 @@ export function exportPdf(rows, params) {
 
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
+  doc.setTextColor(255, 255, 255)
   doc.text('Technology Consulting — Staff Augmentation', 14, 16)
 
   // Quotation title
-  doc.setTextColor(...blue)
+  doc.setTextColor(...dark)
   doc.setFontSize(13)
   doc.setFont('helvetica', 'bold')
-  doc.text('Rate Card', 14, 30)
+  doc.text('Rate Card', 14, 32)
 
   // Params box
   doc.setFontSize(8)
@@ -35,19 +40,19 @@ export function exportPdf(rows, params) {
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
-  doc.text(`Generated: ${date}`, 14, 36)
+  doc.text(`Generated: ${date}`, 14, 38)
   doc.text(
     `Exchange rate: MXN ${params.tipoCambio}  |  Discount vs. market: ${(params.descuento * 100).toFixed(0)}%  |  Hours/month: ${params.horasMes}`,
-    14, 41,
+    14, 43,
   )
 
   const hasEstimated = rows.some(r => r.es_estimado)
   if (hasEstimated) {
     doc.setTextColor(180, 90, 0)
-    doc.text('⚠  Rows marked with ⚠ have estimated market rates — confirm before sending.', 14, 46)
+    doc.text('⚠  Rows marked with ⚠ have estimated market rates — confirm before sending.', 14, 48)
   }
 
-  const tableTop = hasEstimated ? 50 : 46
+  const tableTop = hasEstimated ? 52 : 48
 
   const grandTotal = rows.reduce((sum, r) => sum + r.precioVentaMes * (r.qty ?? 1), 0)
 
@@ -69,25 +74,25 @@ export function exportPdf(rows, params) {
       ]),
       // Grand total row
       [
-        { content: 'TOTAL / MONTH', colSpan: 5, styles: { fontStyle: 'bold', fillColor: blue, textColor: [255, 255, 255] } },
-        { content: fmtUSD(grandTotal, 0), styles: { fontStyle: 'bold', halign: 'right', fillColor: blue, textColor: [255, 255, 255] } },
-        { content: '', styles: { fillColor: blue } },
+        { content: 'TOTAL / MONTH', colSpan: 5, styles: { fontStyle: 'bold', fillColor: dark, textColor: [255, 255, 255] } },
+        { content: fmtUSD(grandTotal, 0), styles: { fontStyle: 'bold', halign: 'right', fillColor: dark, textColor: [255, 255, 255] } },
+        { content: '', styles: { fillColor: dark } },
       ],
     ],
     headStyles: {
-      fillColor: blue,
+      fillColor: dark,
       textColor: [255, 255, 255],
       fontSize: 8,
       fontStyle: 'bold',
     },
-    bodyStyles: { fontSize: 8, textColor: [30, 30, 30] },
-    alternateRowStyles: { fillColor: lightBlue },
+    bodyStyles: { fontSize: 8, textColor: [28, 28, 28] },
+    alternateRowStyles: { fillColor: lightGray },
     didParseCell(data) {
       if (data.section === 'body' && data.row.index < rows.length) {
         const row = rows[data.row.index]
         if (row?.ajustadoPorPiso) {
           if (data.column.index === 3 || data.column.index === 4 || data.column.index === 5) {
-            data.cell.styles.textColor = orange
+            data.cell.styles.textColor = red
             data.cell.styles.fontStyle = 'bold'
           }
         }

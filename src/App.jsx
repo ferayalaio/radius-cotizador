@@ -6,6 +6,7 @@ import ParameterPanel from './components/ParameterPanel'
 import ProfileSelector from './components/ProfileSelector'
 import ResultsTable from './components/ResultsTable'
 import QuotePreview from './components/QuotePreview'
+import logo from './assets/radius_logo.jpeg'
 
 const DEFAULT_PARAMS = {
   tipoCambio: data.meta.parametros_default.tipo_cambio_mxn_usd,
@@ -15,7 +16,6 @@ const DEFAULT_PARAMS = {
 
 const ALL_ROLES = [...new Set(data.perfiles.map(p => p.rol_comercial_us))].sort()
 
-// Deduplicate by role+level — keep first occurrence per block ordering
 const UNIQUE_PERFILES = (() => {
   const seen = new Set()
   return data.perfiles.filter(p => {
@@ -32,7 +32,6 @@ export default function App() {
     role: '',
     levels: ['Junior', 'Mid', 'Senior'],
   })
-  // Map<id, qty> — tracks selection and per-profile headcount
   const [selectedItems, setSelectedItems] = useState(new Map())
   const [showPreview, setShowPreview] = useState(false)
 
@@ -84,11 +83,6 @@ export default function App() {
     })
   }
 
-  const handleDownload = () => {
-    const exportRows = buildExportRows()
-    exportPdf(exportRows, params)
-  }
-
   const buildExportRows = () => {
     const allRows = UNIQUE_PERFILES.map(p => calcRow(p, params))
     if (selectedItems.size > 0) {
@@ -99,14 +93,18 @@ export default function App() {
     return rows.map(r => ({ ...r, qty: 1 }))
   }
 
+  const handleDownload = () => {
+    exportPdf(buildExportRows(), params)
+  }
+
   const canPreview = selectedItems.size > 0 || rows.length > 0
   const selectedCount = selectedItems.size
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-[#F5F3F0]">
       {showPreview && (
         <QuotePreview
-          rows={data.perfiles.map(p => calcRow(p, params))}
+          rows={UNIQUE_PERFILES.map(p => calcRow(p, params))}
           selectedItems={selectedItems.size > 0 ? selectedItems : new Map(rows.map(r => [r.id, 1]))}
           params={params}
           onClose={() => setShowPreview(false)}
@@ -115,31 +113,33 @@ export default function App() {
       )}
 
       {/* Top nav */}
-      <header className="bg-blue-900 text-white shadow-lg">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div>
-            <span className="text-xl font-bold tracking-tight">RADIUS</span>
-            <span className="mx-3 text-blue-400">|</span>
-            <span className="text-sm text-blue-200 font-medium">US Nearshore Staffing · Rate Card Builder</span>
+      <header className="bg-[#1C1C1C] text-white shadow-lg">
+        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="Radius"
+              className="h-9 w-9 rounded-lg object-cover"
+            />
+            <div>
+              <p className="text-sm font-bold tracking-tight leading-none">Radius Tech</p>
+              <p className="text-xs text-white/50 mt-0.5">US Nearshore · Rate Card Builder</p>
+            </div>
           </div>
-          <div className="text-xs text-blue-300">
+          <div className="text-xs text-white/30">
             {data.meta.total_perfiles} profiles loaded
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8 space-y-6">
-        {/* Parameters */}
         <ParameterPanel params={rawParams} onChange={handleParamChange} />
-
-        {/* Selector */}
         <ProfileSelector roles={ALL_ROLES} filters={filters} onFilter={handleFilter} />
 
-        {/* Results header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-700">
+          <h2 className="text-base font-bold text-[#1C1C1C]">
             Results
-            <span className="ml-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+            <span className="ml-2 rounded-full bg-[#FF1B37]/10 px-2.5 py-0.5 text-xs font-semibold text-[#FF1B37]">
               {rows.length}
             </span>
           </h2>
@@ -147,8 +147,8 @@ export default function App() {
           <button
             onClick={() => setShowPreview(true)}
             disabled={!canPreview}
-            className="flex items-center gap-2 rounded-lg bg-blue-900 px-5 py-2 text-sm font-semibold text-white shadow
-              hover:bg-blue-800 active:bg-blue-950 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-[#FF1B37] px-5 py-2 text-sm font-semibold text-white shadow
+              hover:bg-[#e01530] active:bg-[#c01228] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -162,7 +162,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* Table */}
         <ResultsTable
           rows={rows}
           selectedItems={selectedItems}
