@@ -57,7 +57,6 @@ export default function QuotePreview({ rows, selectedItems, params, onClose, onD
                 <TH>#</TH>
                 <TH>Role</TH>
                 <TH>Level</TH>
-                <TH>Block</TH>
                 <TH right>Qty</TH>
                 <TH right>Sell USD/hr</TH>
                 <TH right>Sell USD/mo</TH>
@@ -80,7 +79,6 @@ export default function QuotePreview({ rows, selectedItems, params, onClose, onD
                       {r.nivel}
                     </span>
                   </TD>
-                  <TD><span className="text-slate-500 text-xs">{r.bloque}</span></TD>
                   <TD right bold>{r.qty}</TD>
                   <TD right mono orange={r.ajustadoPorPiso}>{fmtUSD(r.precioVentaHr)}</TD>
                   <TD right mono orange={r.ajustadoPorPiso}>{fmtUSD(r.precioVentaMes, 0)}</TD>

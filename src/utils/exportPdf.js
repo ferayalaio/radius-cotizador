@@ -54,14 +54,13 @@ export function exportPdf(rows, params) {
   autoTable(doc, {
     startY: tableTop,
     head: [[
-      'Role', 'Level', 'Block',
+      'Role', 'Level',
       'Qty', 'Sell USD/hr', 'Sell USD/mo', 'Total USD/mo', 'Margin %',
     ]],
     body: [
       ...rows.map(r => [
         r.es_estimado ? `${r.rol_comercial_us} ⚠` : r.rol_comercial_us,
         r.nivel,
-        r.bloque,
         r.qty ?? 1,
         fmtUSD(r.precioVentaHr),
         fmtUSD(r.precioVentaMes, 0),
@@ -70,7 +69,7 @@ export function exportPdf(rows, params) {
       ]),
       // Grand total row
       [
-        { content: 'TOTAL / MONTH', colSpan: 6, styles: { fontStyle: 'bold', fillColor: blue, textColor: [255, 255, 255] } },
+        { content: 'TOTAL / MONTH', colSpan: 5, styles: { fontStyle: 'bold', fillColor: blue, textColor: [255, 255, 255] } },
         { content: fmtUSD(grandTotal, 0), styles: { fontStyle: 'bold', halign: 'right', fillColor: blue, textColor: [255, 255, 255] } },
         { content: '', styles: { fillColor: blue } },
       ],
@@ -87,7 +86,7 @@ export function exportPdf(rows, params) {
       if (data.section === 'body' && data.row.index < rows.length) {
         const row = rows[data.row.index]
         if (row?.ajustadoPorPiso) {
-          if (data.column.index === 4 || data.column.index === 5 || data.column.index === 6) {
+          if (data.column.index === 3 || data.column.index === 4 || data.column.index === 5) {
             data.cell.styles.textColor = orange
             data.cell.styles.fontStyle = 'bold'
           }
@@ -97,14 +96,13 @@ export function exportPdf(rows, params) {
     margin: { left: 14, right: 14 },
     styles: { overflow: 'linebreak', cellPadding: 2 },
     columnStyles: {
-      0: { cellWidth: 50 },
-      1: { cellWidth: 16 },
-      2: { cellWidth: 36 },
-      3: { cellWidth: 12, halign: 'center' },
-      4: { cellWidth: 24, halign: 'right' },
-      5: { cellWidth: 24, halign: 'right' },
-      6: { cellWidth: 26, halign: 'right' },
-      7: { cellWidth: 18, halign: 'right' },
+      0: { cellWidth: 70 },
+      1: { cellWidth: 18 },
+      2: { cellWidth: 14, halign: 'center' },
+      3: { cellWidth: 28, halign: 'right' },
+      4: { cellWidth: 28, halign: 'right' },
+      5: { cellWidth: 30, halign: 'right' },
+      6: { cellWidth: 22, halign: 'right' },
     },
   })
 

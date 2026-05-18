@@ -15,11 +15,21 @@ const DEFAULT_PARAMS = {
 
 const ALL_ROLES = [...new Set(data.perfiles.map(p => p.rol_comercial_us))].sort()
 
+// Deduplicate by role+level — keep first occurrence per block ordering
+const UNIQUE_PERFILES = (() => {
+  const seen = new Set()
+  return data.perfiles.filter(p => {
+    const key = `${p.rol_comercial_us}|${p.nivel}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+})()
+
 export default function App() {
   const [rawParams, setRawParams] = useState(DEFAULT_PARAMS)
   const [filters, setFilters] = useState({
     role: '',
-    bloque: '',
     levels: ['Junior', 'Mid', 'Senior'],
   })
   // Map<id, qty> — tracks selection and per-profile headcount
@@ -33,10 +43,9 @@ export default function App() {
   }), [rawParams])
 
   const rows = useMemo(() => {
-    return data.perfiles
+    return UNIQUE_PERFILES
       .filter(p => {
         if (filters.role && p.rol_comercial_us !== filters.role) return false
-        if (filters.bloque && p.bloque !== filters.bloque) return false
         if (!filters.levels.includes(p.nivel)) return false
         return true
       })
@@ -81,8 +90,7 @@ export default function App() {
   }
 
   const buildExportRows = () => {
-    // All rows across all profiles (not just visible), filtered by selection
-    const allRows = data.perfiles.map(p => calcRow(p, params))
+    const allRows = UNIQUE_PERFILES.map(p => calcRow(p, params))
     if (selectedItems.size > 0) {
       return allRows
         .filter(r => selectedItems.has(r.id))

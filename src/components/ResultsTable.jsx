@@ -50,7 +50,6 @@ export default function ResultsTable({ rows, selectedItems, onToggle, onToggleAl
               </th>
               <TH>Role</TH>
               <TH>Level</TH>
-              <TH>Block</TH>
               <TH right>Cost USD/hr</TH>
               <TH right>Sell USD/hr</TH>
               <TH right>Sell USD/mo</TH>
@@ -98,9 +97,6 @@ export default function ResultsTable({ rows, selectedItems, onToggle, onToggleAl
                         : 'bg-slate-100 text-slate-600'}`}>
                       {r.nivel}
                     </span>
-                  </TD>
-                  <TD>
-                    <span className="text-slate-500 text-xs">{r.bloque}</span>
                   </TD>
                   <TD right mono>{fmtUSD(r.costoUsdHr)}</TD>
                   <TD right mono orange={r.ajustadoPorPiso}>
