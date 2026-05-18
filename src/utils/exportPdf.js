@@ -1,8 +1,25 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { fmtUSD, fmtPct } from './pricing'
+import logoUrl from '../assets/radius_logo.jpeg'
 
-export function exportPdf(rows, params) {
+function loadImageAsBase64(url) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      canvas.getContext('2d').drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/jpeg'))
+    }
+    img.src = url
+  })
+}
+
+export async function exportPdf(rows, params) {
+  const logoBase64 = await loadImageAsBase64(logoUrl)
+
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
   const dark = [28, 28, 28]
@@ -11,49 +28,56 @@ export function exportPdf(rows, params) {
 
   // Header bar
   doc.setFillColor(...dark)
-  doc.rect(0, 0, 297, 22, 'F')
+  doc.rect(0, 0, 297, 26, 'F')
 
   // Red accent strip
   doc.setFillColor(...red)
-  doc.rect(0, 22, 297, 2, 'F')
+  doc.rect(0, 26, 297, 2, 'F')
 
+  // Logo (square, fits inside header)
+  doc.addImage(logoBase64, 'JPEG', 14, 3, 20, 20)
+
+  // Company name + subtitle
   doc.setTextColor(255, 255, 255)
-  doc.setFontSize(16)
+  doc.setFontSize(15)
   doc.setFont('helvetica', 'bold')
-  doc.text('RADIUS  |  US Nearshore Staffing', 14, 10)
+  doc.text('Radius Tech', 38, 12)
 
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(255, 255, 255)
-  doc.text('Technology Consulting — Staff Augmentation', 14, 16)
-
-  // Quotation title
-  doc.setTextColor(...dark)
-  doc.setFontSize(13)
-  doc.setFont('helvetica', 'bold')
-  doc.text('Rate Card', 14, 32)
-
-  // Params box
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(80, 80, 80)
+  doc.setTextColor(255, 255, 255)
+  doc.text('US Nearshore Staffing  ·  Technology Consulting', 38, 18)
+
+  // Date top-right
+  doc.setFontSize(7)
+  doc.setTextColor(180, 180, 180)
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
-  doc.text(`Generated: ${date}`, 14, 38)
+  doc.text(date, 283, 12, { align: 'right' })
+
+  // Section title
+  doc.setTextColor(...dark)
+  doc.setFontSize(13)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Rate Card', 14, 36)
+
+  // Params line
+  doc.setFontSize(8)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(100, 100, 100)
   doc.text(
     `Exchange rate: MXN ${params.tipoCambio}  |  Discount vs. market: ${(params.descuento * 100).toFixed(0)}%  |  Hours/month: ${params.horasMes}`,
-    14, 43,
+    14, 42,
   )
 
   const hasEstimated = rows.some(r => r.es_estimado)
   if (hasEstimated) {
     doc.setTextColor(180, 90, 0)
-    doc.text('⚠  Rows marked with ⚠ have estimated market rates — confirm before sending.', 14, 48)
+    doc.text('⚠  Rows marked with ⚠ have estimated market rates — confirm before sending.', 14, 47)
   }
 
-  const tableTop = hasEstimated ? 52 : 48
-
+  const tableTop = hasEstimated ? 51 : 47
   const grandTotal = rows.reduce((sum, r) => sum + r.precioVentaMes * (r.qty ?? 1), 0)
 
   autoTable(doc, {
@@ -72,7 +96,6 @@ export function exportPdf(rows, params) {
         fmtUSD(r.precioVentaMes * (r.qty ?? 1), 0),
         fmtPct(r.margen),
       ]),
-      // Grand total row
       [
         { content: 'TOTAL / MONTH', colSpan: 5, styles: { fontStyle: 'bold', fillColor: dark, textColor: [255, 255, 255] } },
         { content: fmtUSD(grandTotal, 0), styles: { fontStyle: 'bold', halign: 'right', fillColor: dark, textColor: [255, 255, 255] } },
@@ -111,7 +134,7 @@ export function exportPdf(rows, params) {
     },
   })
 
-  // Footer
+  // Footer with logo tint on each page
   const pageCount = doc.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)

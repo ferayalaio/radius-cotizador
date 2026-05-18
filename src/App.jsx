@@ -93,8 +93,8 @@ export default function App() {
     return rows.map(r => ({ ...r, qty: 1 }))
   }
 
-  const handleDownload = () => {
-    exportPdf(buildExportRows(), params)
+  const handleDownload = async () => {
+    await exportPdf(buildExportRows(), params)
   }
 
   const canPreview = selectedItems.size > 0 || rows.length > 0
@@ -108,7 +108,7 @@ export default function App() {
           selectedItems={selectedItems.size > 0 ? selectedItems : new Map(rows.map(r => [r.id, 1]))}
           params={params}
           onClose={() => setShowPreview(false)}
-          onDownload={() => { handleDownload(); setShowPreview(false) }}
+          onDownload={async () => { await handleDownload(); setShowPreview(false) }}
         />
       )}
 
